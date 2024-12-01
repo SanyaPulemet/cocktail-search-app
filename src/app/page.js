@@ -1,45 +1,43 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+function UploadForm() {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-function CocktailList() {
-  const [cocktails, setCocktails] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const formData = new FormData(e.target);
 
-  useEffect(() => {
-    const fetchCocktails = async () => {
-      try {
-        const response = await fetch('/api/getallcocktails');
-        if (!response.ok) throw new Error('error');
+    try {
+      const response = await fetch('/api/cocktails', {
+        method: 'POST',
+        body: formData,
+      });
 
-        const data = await response.json();
-        setCocktails(data);
-      } catch (error) {
-        console.error('error getting data', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCocktails();
-  }, []);
+      if (!response.ok) throw new Error('!response.ok');
+      alert('cocktail created');
+    } catch (error) {
+      console.error(error);
+      alert('error creating cocktail');
+    }
+  };
 
   return (
-    <div>
-      {loading ? (
-        <p>loading</p>
-      ) : (
-        <>
-          <h1>cocktails</h1>
-          <ul>
-            {cocktails.map(({ id, name }) => (
-              <li key={id}>{name}</li>
-            ))}
-          </ul>
-        </>
-      )}
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input type='text' name='name' placeholder='name' required />
+      <br />
+      <textarea name='description' placeholder='description'></textarea>
+      <br />
+      <textarea name='recipe' placeholder='recipe'></textarea>
+      <br />
+      <textarea
+        name='ingredients'
+        placeholder='ingredients json format'
+      ></textarea>
+      <br />
+      <input type='file' name='image' accept='image/*' />
+      <br />
+      <button type='submit'>submit</button>
+    </form>
   );
 }
 
-export default CocktailList;
+export default UploadForm;

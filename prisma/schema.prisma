@@ -18,7 +18,7 @@ model Cocktail {
   name        String
   description String?
   recipe      String?
-  images      String?
+  image       String?
   ingredients CocktailIngredient[]
 }
 
