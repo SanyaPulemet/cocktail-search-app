@@ -18,7 +18,20 @@ export async function GET(request) {
     take: limit,
     include: { ingredients: true },
   });
-  
-  return new Response(JSON.stringify(cocktails), { status: 200 });
+
+  const totalCount = await prisma.cocktail.count({
+    where: {
+      OR: [
+        { name: { contains: query } },
+        {
+          ingredients: { some: { ingredient: { name: { contains: query } } } },
+        },
+      ],
+    },
+  });
+
+  const totalPages = Math.ceil(totalCount / limit);
+
+  return new Response(JSON.stringify({cocktails, totalPages}), { status: 200 });
 }
 //api/cocktails/search?query={searchTerm}&page={number}&limit={number}

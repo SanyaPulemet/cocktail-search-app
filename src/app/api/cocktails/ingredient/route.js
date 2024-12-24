@@ -33,18 +33,19 @@ export async function POST(request) {
   const { searchParams } = new URL(request.url);
   const cocktailId = parseInt(searchParams.get('cocktailId'));
   const data = await request.formData();
+  const ingredients = JSON.parse(data.get('ingredients'));
 
   try {
-    const newIngredient = await prisma.cocktailIngredient.create({
-      data: {
-        cocktailId: parseInt(cocktailId),
-        ingredientId: parseInt(data.get('ingredientId')),
-        amountOz: parseInt(data.get('amountOz')),
-      },
+    const newIngredients = await prisma.cocktailIngredient.createMany({
+      data: ingredients.map((ing) => ({
+        cocktailId,
+        ingredientId: parseInt(ing.ingredientId),
+        amountOz: parseFloat(ing.amountOz),
+      })),
     });
 
-    return new Response(JSON.stringify(newIngredient), { status: 201 });
+    return new Response(JSON.stringify(newIngredients), { status: 201 });
   } catch (error) {
-    return new Response('error adding ingredient', { status: 500 });
+    return new Response('error adding ingredients', { status: 500 });
   }
 }//api/cocktails/ingredient?cocktailId={cocktailId}

@@ -9,13 +9,17 @@ export async function GET(request) {
   const limit = parseInt(searchParams.get('limit')) || 3;
   const offset = (page - 1) * limit;
 
+  const totalCount = await prisma.cocktail.count();
+
   const cocktails = await prisma.cocktail.findMany({
     skip: offset,
     take: limit,
     include: { ingredients: true },
   });
 
-  return new Response(JSON.stringify(cocktails), { status: 200 });
+  const totalPages = Math.ceil(totalCount / limit);
+
+  return new Response(JSON.stringify({cocktails, totalPages}), { status: 200 });
 }///api/cocktails?page={number}&limit={number}
 
 export async function POST(request) {
@@ -30,7 +34,6 @@ export async function POST(request) {
     const extension = path.extname(imageFile.name);
     const filename = uuidv4() + extension;
     const ingredients = JSON.parse(data.get('ingredients'));
-    console.log(ingredients)
 
     try {
       await writeFile(

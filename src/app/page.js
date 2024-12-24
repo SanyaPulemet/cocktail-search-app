@@ -1,43 +1,57 @@
 'use client';
 
-function UploadForm() {
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+import { CocktailModal } from '../components/modal/modal.js';
+import { CocktailCard } from '../components/cocktailcard/cocktailcard.js';
+import { SearchBar } from '../components/searchbar/searchbar.js';
+import { NextPrevButton } from '../components/nextprevbutton/nextprevbutton.js';
+import { ModalContext } from '../components/modalcontext.js';
+import { useContext, useEffect } from 'react';
+import { useCocktailPagination } from '../components/usecocktailpagination.js';
 
-    const formData = new FormData(e.target);
-
-    try {
-      const response = await fetch('/api/cocktails', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error('!response.ok');
-      alert('cocktail created');
-    } catch (error) {
-      console.error(error);
-      alert('error creating cocktail');
-    }
-  };
+export default function App() {
+  const { modalStates, closeModals, openViewCocktailModal } = useContext(ModalContext);
+  const { cocktails, page, handleNextPage, handlePrevPage, handleSearch, fetchCocktails, totalPages, resetPage } = useCocktailPagination();
+  
+  useEffect(() => {
+    fetchCocktails(page);
+  }, []);
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type='text' name='name' placeholder='name' required />
-      <br />
-      <textarea name='description' placeholder='description'></textarea>
-      <br />
-      <textarea name='recipe' placeholder='recipe'></textarea>
-      <br />
-      <textarea
-        name='ingredients'
-        placeholder='ingredients json format'
-      ></textarea>
-      <br />
-      <input type='file' name='image' accept='image/*' />
-      <br />
-      <button type='submit'>submit</button>
-    </form>
+    <>
+      <SearchBar handleSearch={handleSearch} cocktails={cocktails} />
+
+      <div>
+        {cocktails.map((cocktail) => (
+            <CocktailCard 
+              key={cocktail.id} 
+              cocktail={cocktail}
+              onClick={() => openViewCocktailModal(cocktail.id)} 
+            />
+        ))}
+      </div>
+
+      <CocktailModal
+        isOpen={modalStates.addCocktail || modalStates.viewCocktail.open}
+        onClose={closeModals}
+        cocktailId={modalStates.viewCocktail.id}
+        modalType={modalStates.addCocktail ? 'add' : 'view'}
+        resetPage={resetPage}
+      />
+
+      <div className='mt-[90px] mb-[50px] flex justify-end space-x-[30px]'>
+        <NextPrevButton 
+          onClick={handlePrevPage} 
+          isNext={false}
+          page={page}
+          totalPages={totalPages}
+        />
+        <NextPrevButton 
+          onClick={handleNextPage} 
+          isNext={true}
+          page={page}
+          totalPages={totalPages}
+        />
+      </div>
+    </>
   );
 }
-
-export default UploadForm;
